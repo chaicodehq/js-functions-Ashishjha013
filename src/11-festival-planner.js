@@ -49,5 +49,49 @@
  *   mgr.getUpcoming("2025-01-01", 1); // => [{ name: "Republic Day", ... }]
  */
 export function createFestivalManager() {
-  // Your code here
+  let festivals = [];
+  const allowedTypes = new Set(['religious', 'national', 'cultural']);
+  const isValidDateString = (date) => typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date);
+
+  const addFestival = (name, date, type) => {
+    if (typeof name !== 'string' || name.length === 0) return -1;
+    if (!isValidDateString(date)) return -1;
+    if (!allowedTypes.has(type)) return -1;
+    if (festivals.some((f) => f.name === name)) return -1;
+
+    festivals.push({ name, date, type });
+    return festivals.length;
+  };
+
+  const removeFestival = (name) => {
+    const idx = festivals.findIndex((f) => f.name === name);
+    if (idx === -1) return false;
+    festivals.splice(idx, 1);
+    return true;
+  };
+
+  const getAll = () => festivals.map((f) => ({ ...f }));
+
+  const getByType = (type) => festivals.filter((f) => f.type === type).map((f) => ({ ...f }));
+
+  const getUpcoming = (currentDate, n = 3) => {
+    if (!isValidDateString(currentDate)) return [];
+    const upcoming = festivals
+      .filter((f) => typeof f.date === 'string' && f.date >= currentDate)
+      .slice()
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(0, n);
+    return upcoming.map((f) => ({ ...f }));
+  };
+
+  const getCount = () => festivals.length;
+
+  return {
+    addFestival,
+    removeFestival,
+    getAll,
+    getByType,
+    getUpcoming,
+    getCount,
+  };
 }

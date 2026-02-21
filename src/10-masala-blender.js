@@ -53,29 +53,60 @@
  *   // => { name: "Haldi", form: "powder", packed: true, label: "Haldi Masala" }
  */
 export function pipe(...fns) {
-  // Your code here
+  const onlyFns = fns.filter((fn) => typeof fn === 'function');
+  if (onlyFns.length === 0) return (x) => x;
+  return (input) => onlyFns.reduce((acc, fn) => fn(acc), input);
 }
 
 export function compose(...fns) {
-  // Your code here
+  const onlyFns = fns.filter((fn) => typeof fn === 'function');
+  if (onlyFns.length === 0) return (x) => x;
+  return (input) => onlyFns.reduceRight((acc, fn) => fn(acc), input);
 }
 
 export function grind(spice) {
-  // Your code here
+  return {
+    ...(spice && typeof spice === 'object' ? spice : {}),
+    form: 'powder',
+  };
 }
 
 export function roast(spice) {
-  // Your code here
+  return {
+    ...(spice && typeof spice === 'object' ? spice : {}),
+    roasted: true,
+    aroma: 'strong',
+  };
 }
 
 export function mix(spice) {
-  // Your code here
+  return {
+    ...(spice && typeof spice === 'object' ? spice : {}),
+    mixed: true,
+  };
 }
 
 export function pack(spice) {
-  // Your code here
+  const base = spice && typeof spice === 'object' ? spice : {};
+  return {
+    ...base,
+    packed: true,
+    label: `${base.name} Masala`,
+  };
 }
 
 export function createRecipe(steps) {
-  // Your code here
+  if (!Array.isArray(steps) || steps.length === 0) return (x) => x;
+
+  const stepMap = {
+    grind,
+    roast,
+    mix,
+    pack,
+  };
+
+  const fns = steps.map((s) => stepMap[s]).filter((fn) => typeof fn === 'function');
+
+  if (fns.length === 0) return (x) => x;
+  return pipe(...fns);
 }

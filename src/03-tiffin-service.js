@@ -39,14 +39,70 @@
  *   combinePlans(plan1, plan2, plan3)
  *   // => { totalCustomers: 3, totalRevenue: 7200, mealBreakdown: { veg: 2, nonveg: 1 } }
  */
-export function createTiffinPlan({ name, mealType = "veg", days = 30 } = {}) {
-  // Your code here
+export function createTiffinPlan({ name, mealType = 'veg', days = 30 } = {}) {
+  const rates = {
+    veg: 80,
+    nonveg: 120,
+    jain: 90,
+  };
+
+  if (typeof name !== 'string' || name.length === 0) return null;
+  if (!Object.prototype.hasOwnProperty.call(rates, mealType)) return null;
+  if (!Number.isFinite(days) || days <= 0) return null;
+
+  const dailyRate = rates[mealType];
+  const totalCost = dailyRate * days;
+
+  return {
+    name,
+    mealType,
+    days,
+    dailyRate,
+    totalCost,
+  };
 }
 
 export function combinePlans(...plans) {
-  // Your code here
+  if (plans.length === 0) return null;
+
+  const mealBreakdown = {};
+  let totalRevenue = 0;
+
+  for (const plan of plans) {
+    const mealType = plan && typeof plan.mealType === 'string' ? plan.mealType : 'unknown';
+    mealBreakdown[mealType] = (mealBreakdown[mealType] ?? 0) + 1;
+
+    if (plan && Number.isFinite(plan.totalCost)) {
+      totalRevenue += plan.totalCost;
+    }
+  }
+
+  return {
+    totalCustomers: plans.length,
+    totalRevenue,
+    mealBreakdown,
+  };
 }
 
 export function applyAddons(plan, ...addons) {
-  // Your code here
+  if (!plan || typeof plan !== 'object') return null;
+
+  const addonNames = [];
+  const totalAddonPerDay = (Array.isArray(addons) ? addons : []).reduce((sum, addon) => {
+    if (!addon || typeof addon !== 'object') return sum;
+    if (typeof addon.name === 'string') addonNames.push(addon.name);
+    if (!Number.isFinite(addon.price)) return sum;
+    return sum + addon.price;
+  }, 0);
+
+  const dailyRate = (Number.isFinite(plan.dailyRate) ? plan.dailyRate : 0) + totalAddonPerDay;
+  const days = Number.isFinite(plan.days) ? plan.days : 0;
+  const totalCost = dailyRate * days;
+
+  return {
+    ...plan,
+    dailyRate,
+    totalCost,
+    addonNames,
+  };
 }

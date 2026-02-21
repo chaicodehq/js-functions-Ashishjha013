@@ -45,17 +45,57 @@
  *   // => [{ rating: 5 }, { rating: 3 }]
  */
 export function createFilter(field, operator, value) {
-  // Your code here
+  const ops = {
+    '>': (a) => a > value,
+    '<': (a) => a < value,
+    '>=': (a) => a >= value,
+    '<=': (a) => a <= value,
+    '===': (a) => a === value,
+  };
+
+  if (!Object.prototype.hasOwnProperty.call(ops, operator)) {
+    return () => false;
+  }
+
+  const cmp = ops[operator];
+  return (obj) => cmp(obj?.[field]);
 }
 
-export function createSorter(field, order = "asc") {
-  // Your code here
+export function createSorter(field, order = 'asc') {
+  const direction = order === 'desc' ? -1 : 1;
+  return (a, b) => {
+    const av = a?.[field];
+    const bv = b?.[field];
+
+    const aMissing = av === undefined || av === null;
+    const bMissing = bv === undefined || bv === null;
+    if (aMissing && bMissing) return 0;
+    if (aMissing) return 1 * direction;
+    if (bMissing) return -1 * direction;
+
+    if (typeof av === 'number' && typeof bv === 'number') {
+      return (av - bv) * direction;
+    }
+    return String(av).localeCompare(String(bv)) * direction;
+  };
 }
 
 export function createMapper(fields) {
-  // Your code here
+  return (obj) => {
+    const out = {};
+    for (const field of fields) {
+      out[field] = obj?.[field];
+    }
+    return out;
+  };
 }
 
 export function applyOperations(data, ...operations) {
-  // Your code here
+  if (!Array.isArray(data)) return [];
+  if (operations.length === 0) return data;
+
+  return operations.reduce((acc, op) => {
+    if (typeof op !== 'function') return acc;
+    return op(acc);
+  }, data);
 }

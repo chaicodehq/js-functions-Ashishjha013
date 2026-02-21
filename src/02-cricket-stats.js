@@ -38,21 +38,43 @@
  *   // => { name: "Jadeja", strikeRate: 175, economy: 7.5, battingAvg: 28.57, isAllRounder: false }
  */
 export const calcStrikeRate = (runs, balls) => {
-  // Your code here
+  if (!Number.isFinite(runs) || !Number.isFinite(balls)) return 0;
+  if (balls <= 0 || runs < 0) return 0;
+  return Number(((runs / balls) * 100).toFixed(2));
 };
 
 export const calcEconomy = (runsConceded, overs) => {
-  // Your code here
+  if (!Number.isFinite(runsConceded) || !Number.isFinite(overs)) return 0;
+  if (overs <= 0 || runsConceded < 0) return 0;
+  return Number((runsConceded / overs).toFixed(2));
 };
 
 export const calcBattingAvg = (totalRuns, innings, notOuts = 0) => {
-  // Your code here
+  if (!Number.isFinite(totalRuns) || !Number.isFinite(innings) || !Number.isFinite(notOuts)) {
+    return 0;
+  }
+  const outs = innings - notOuts;
+  if (outs <= 0) return 0;
+  return Number((totalRuns / outs).toFixed(2));
 };
 
 export const isAllRounder = (battingAvg, economy) => {
-  // Your code here
+  return battingAvg > 30 && economy < 8;
 };
 
 export const getPlayerCard = (player) => {
-  // Your code here
+  if (!player || typeof player !== 'object') return null;
+  if (typeof player.name !== 'string' || player.name.length === 0) return null;
+
+  const strikeRate = calcStrikeRate(player.runs, player.balls);
+  const economy = calcEconomy(player.runsConceded, player.overs);
+  const battingAvg = calcBattingAvg(player.totalRuns, player.innings, player.notOuts);
+
+  return {
+    name: player.name,
+    strikeRate,
+    economy,
+    battingAvg,
+    isAllRounder: isAllRounder(battingAvg, economy),
+  };
 };
